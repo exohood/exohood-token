@@ -1,0 +1,29 @@
+{
+  "name": "swaps2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "compile": "truffle compile",
+    "test": "truffle test --network ganache",
+    "migrate": "truffle migrate --network ropsten",
+    "prettier": "prettier --write **/*.js **/*.sol"
+  },
+  "repository": "https://github.com/exohood/exohood-token/swaps2.git",
+  "author": "JJ Uzumaki <jjuzumaki@proton.me>",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-bn": "^0.1.1",
+    "ganache-core": "^2.5.5",
+    "openzeppelin-test-helpers": "^0.4.0",
+    "prettier": "^1.17.1",
+    "prettier-plugin-solidity": "^1.0.0-alpha.22",
+    "truffle": "^5.0.20",
+    "truffle-hdwallet-provider-privkey": "^1.0.3"
+  },
+  "dependencies": {
+    "openzeppelin-solidity": "2.2.0",
+    "sc-library": "github:exohood/exohood-token/sc-library#0.7.1"
+  }
+}
