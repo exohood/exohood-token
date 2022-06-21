@@ -1,0 +1,30 @@
+{
+  "name": "Exohood",
+  "version": "1.0.0",
+  "description": "Decentralized protection upgrade",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "npx truffle test --show-events",
+    "coverage": "npx solidity-coverage",
+    "prettier:solidity": "npx prettier --write contracts.sol"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^2.3.0",
+    "ganache-core": "^2.9.2",
+    "prettier": "^1.18.2",
+    "prettier-plugin-solidity": "^1.0.0-alpha.34",
+    "solhint-plugin-prettier": "0.0.3",
+    "solidity-coverage": "^0.6.7",
+    "truffle": "^5.0.42",
+    "web3": "^1.2.4"
+  },
+  "dependencies": {
+    "codecov": "^3.6.2",
+    "ganache-cli": "^6.8.2"
+  }
+}
