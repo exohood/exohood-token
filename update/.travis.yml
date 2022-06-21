@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - 12
+
+install:
+  - npm install -g codecov ganache-cli
+
+script:
+  - npm i
+  # - ganache-cli -p 4545 > /dev/null &
+  - sleep 5
+  # - npm run test
+  - npm run coverage
+  - codecov
