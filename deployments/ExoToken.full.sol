@@ -29,8 +29,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 pragma solidity ^0.4.23;
-
-
 /**
  * @title BEP20Basic
  * @dev Simpler version of BEP20 interface
@@ -41,8 +39,6 @@ contract BEP20Basic {
   function transfer(address to, uint256 value) public returns (bool);
   event Transfer(address indexed from, address indexed to, uint256 value);
 }
-
-
 
 /**
  * @title SafeMath
@@ -94,8 +90,6 @@ library SafeMath {
   }
 }
 
-
-
 /**
  * @title Basic token
  * @dev Basic version of StandardToken, with no allowances.
@@ -139,7 +133,6 @@ contract BasicToken is BEP20Basic {
   }
 
 }
-
 
 /**
  * @title BEP20 interface
@@ -288,7 +281,7 @@ contract StandardToken is BEP20, BasicToken {
  * functions, this simplifies the implementation of "user permissions".
  */
 contract Ownable {
-  address public owner; 
+  address public owner;
 
 
   event OwnershipRenounced(address indexed previousOwner);
@@ -525,7 +518,7 @@ contract FreezableToken is StandardToken {
     }
 
     function toKey(address _addr, uint _release) internal pure returns (bytes32 result) {
-        // Exohood masc to increase entropy
+        // WISH masc to increase entropy
         result = 0x5749534800000000000000000000000000000000000000000000000000000000;
         assembly {
             result := or(result, mul(_addr, 0x10000000000000000))
@@ -566,8 +559,6 @@ contract FreezableToken is StandardToken {
         chains[parentKey] = _until;
     }
 }
-
-
 /**
  * @title Burnable Token
  * @dev Token that can be irreversibly burned (destroyed).
@@ -579,7 +570,6 @@ contract BurnableToken is BasicToken {
   /**
    * @dev Burns a specific amount of tokens.
    * @param _value The amount of token to be burned.
-   * Burned address (0x000000000000000000000000000000000000dead)
    */
   function burn(uint256 _value) public {
     _burn(msg.sender, _value);
@@ -596,9 +586,6 @@ contract BurnableToken is BasicToken {
     emit Transfer(_who, address(0), _value);
   }
 }
-
-
-
 /**
  * @title Pausable
  * @dev Base contract which allows children to implement an emergency stop mechanism.
@@ -643,7 +630,6 @@ contract Pausable is Ownable {
   }
 }
 
-
 contract FreezableMintableToken is FreezableToken, MintableToken {
     /**
      * @dev Mint the specified amount of token to the specified address and freeze it until the specified date.
@@ -669,8 +655,6 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
     }
 }
 
-
-
 contract Consts {
     uint public constant TOKEN_DECIMALS = 18;
     uint8 public constant TOKEN_DECIMALS_UINT8 = 18;
@@ -683,9 +667,6 @@ contract Consts {
     
     bool public constant CONTINUE_MINTING = true;
 }
-
-
-
 
 contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
     
@@ -722,7 +703,6 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
         return super.transfer(_to, _value);
     }
 
-    
     function init() private {
         require(!initialized);
         initialized = true;
@@ -732,7 +712,7 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable
         }
 
         
-        address[4] memory addresses = [address(0x8778f4d4ea6ae699dc5f97ac318bdb3d9bbc20a400),address(0x600a2ccc7c8779af245dec3cae9d430ffac2749100),address(0x156dd746a820b7e4c6eab9e40ce3a4b2318c820100),address(0x0594d6ac776f46837f2ecc16cd6b8f4a616eed4b00)];
+        address[4] memory addresses = [address(0x8778f4d4ea6ae699dc5f97ac318bdb3d9bbc20a4),address(0x600a2ccc7c8779af245dec3cae9d430ffac27491),address(0x156dd746a820b7e4c6eab9e40ce3a4b2318c8201),address(0x0594d6ac776f46837f2ecc16cd6b8f4a616eed4b)];
         uint[4] memory amounts = [uint(8000000000000000000000000),uint(182000000000000000000000000),uint(210000000000000000000000000),uint(600000000000000000000000000)];
         uint64[4] memory freezes = [uint64(0),uint64(0),uint64(0),uint64(0)];
 
