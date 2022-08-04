@@ -13,7 +13,7 @@
 * MIT License
 * ===========
 *
-* Copyright (c) 2021 The Exohood Project
+* Copyright (c) 2020 - 2022 Exohood Protocol
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU Lesser General Public License as published by
