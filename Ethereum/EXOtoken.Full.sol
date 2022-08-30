@@ -29,7 +29,9 @@
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-contract Exohood { pragma solidity ^0.4.23;
+pragma solidity ^0.4.23;
+
+contract Exohood { 
     function main() {
         memory[0x40:0x60] = 0x80;
     
