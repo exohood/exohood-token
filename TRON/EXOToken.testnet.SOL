@@ -1,0 +1,205 @@
+/*
+/***
+*     ______           __                    __
+*    / _____  ______  / /_  ____  ____  ____/ /
+*   / __/ | |/_/ __ \/ __ \/ __ \/ __ \/ __  / 
+*  / /____>  </ /_/ / / / / /_/ / /_/ / /_/ /  
+* /_____/_/|_|\____/_/ /_/\____/\____/\__,_/   
+*                                             
+*   
+*    
+* https://www.exohood.com
+*
+* MIT License
+* ===========
+*
+* Copyright (c) 2020 - 2022 Exohood Protocol
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Lesser General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
+/* Copyright 2017 Cedric Mesnil, Ledger SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+const BigNumber = web3.BigNumber;
+
+require('chai')
+    .use(require('chai-bignumber')(BigNumber))
+    .use(require('chai-as-promised'))
+    .should();
+
+const { revert, snapshot } = require('sc-library/test-utils/evmMethods');
+const { estimateConstructGas } = require('sc-library/test-utils/web3Utils');
+
+const Token = artifacts.require('./MainToken.sol');
+//#if !defined(D_ONLY_TOKEN) || !D_ONLY_TOKEN
+const Crowdsale = artifacts.require('./TemplateCrowdsale.sol');
+//#endif
+const SuccessfulERC223Receiver = artifacts.require('./SuccessfulERC223Receiver.sol');
+const FailingERC223Receiver = artifacts.require('./FailingERC223Receiver.sol');
+const ERC223ReceiverWithoutTokenFallback = artifacts.require('./ERC223ReceiverWithoutTokenFallback.sol');
+
+//#if D_PREMINT_COUNT > 0
+const extractBigNumber = (string) => new BigNumber(string.match(/\((\d+)\)/)[1]);
+
+const premintAddresses = 'D_PREMINT_ADDRESSES'.split(',')
+    .map(s => s.match(/\((\w+)\)/)[1]);
+
+const premintAmounts = 'D_PREMINT_AMOUNTS'.split(',')
+    .map(s => extractBigNumber(s));
+//#endif
+
+contract('Exohood', accounts => {
+    const OWNER = TLjrcGtmt7u747DV4YzxEzG1SfkB8Hq3XT;
+    const TARGET_USER = TLjrcGtmt7u747DV4YzxEzG1SfkB8Hq3XT;
+
+    let TOKEN_OWNER = TLjrcGtmt7u747DV4YzxEzG1SfkB8Hq3XT;
+    //#if defined(D_ONLY_TOKEN) && D_ONLY_TOKEN
+    TOKEN_OWNER = TLjrcGtmt7u747DV4YzxEzG1SfkB8Hq3XT;
+    //#endif
+
+    let snapshotId;
+
+    beforeEach(async () => {
+        snapshotId = (await snapshot()).result;
+    });
+
+    afterEach(async () => {
+        await revert(snapshotId);
+    });
+
+    it('#0 gas usage', async () => {
+        await estimateConstructGas(Token).then(console.info);
+    });
+
+    it('#0 3/4 precheck', async () => {
+        TARGET_USER.should.be.equals('D_CONTRACTS_OWNER', 'it must be the same');
+    });
+
+    it('#1 construct', async () => {
+        const token = await Token.new();
+        token.address.should.have.length(42);
+        await token.owner().should.eventually.be.equals(TOKEN_OWNER);
+    });
+
+    //#if !D_CONTINUE_MINTING && defined(D_ONLY_TOKEN) && D_ONLY_TOKEN
+    it('#2 cannot mint if CONTINUE_MINTING is true', async () => {
+        const token = await Token.new();
+
+        const tokensToMint = web3.toWei(1, 'ether');
+        await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER }).should.eventually.be.rejected;
+    });
+    //#else
+    it('#2 minting', async () => {
+        const token = await Token.new();
+
+        const tokensToMint = web3.toWei(1, 'ether');
+        await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER });
+        const balance = await token.balanceOf(BUYER_1);
+        balance.should.bignumber.be.equals(tokensToMint);
+    });
+
+    it('#3 minting after it finished', async () => {
+        const token = await Token.new();
+
+        const tokensToMint = web3.toWei(1, 'ether');
+
+        await token.finishMinting({ from: TOKEN_OWNER });
+        await token.mint(BUYER_1, tokensToMint, { from: TOKEN_OWNER }).should.eventually.be.rejected;
+    });
+
+    it('#4 burn', async () => {
+        const token = await Token.new();
+
+        const tokensToMint = web3.toWei(1, 'ether');
+        await token.mint(OWNER, tokensToMint, { from: TOKEN_OWNER });
+        await token.burn(tokensToMint + 1).should.eventually.be.rejected;
+        await token.burn(tokensToMint / 2);
+    });
+
+    //#if "D_ERC" == 23
+    it('#5 erc223 transfer to contract', async () => {
+        const token = await Token.new();
+        const receiver = await SuccessfulERC223Receiver.new();
+
+        const tokensToTransfer = web3.toWei(1, 'ether');
+        await token.mint(BUYER_1, tokensToTransfer, { from: TOKEN_OWNER });
+
+        await token.transfer(receiver.address, tokensToTransfer, { from: BUYER_1 });
+
+        const balance = await token.balanceOf(receiver.address);
+        balance.should.bignumber.be.equals(tokensToTransfer);
+    });
+
+    it('#6 erc223 transfer should fail on contract receiver with failing tokenFallback function', async () => {
+        const token = await Token.new();
+        const failingReceiver = await FailingERC223Receiver.new();
+
+        const tokensToTransfer = web3.toWei(1, 'wei');
+        await token.mint(BUYER_1, tokensToTransfer, { from: TOKEN_OWNER });
+
+        await token.transfer(failingReceiver.address, tokensToTransfer, { from: BUYER_1 })
+            .should.eventually.be.rejected;
+
+        await token.balanceOf(failingReceiver.address).should.eventually.be.zero;
+    });
+
+    it('#7 erc223 transfer should fail on contract without tokenFallback function', async () => {
+        const token = await Token.new();
+        const failingReceiver = await ERC223ReceiverWithoutTokenFallback.new();
+
+        const tokensToTransfer = web3.toWei(1, 'wei');
+        await token.mint(BUYER_1, tokensToTransfer, { from: TOKEN_OWNER });
+
+        await token.transfer(failingReceiver.address, tokensToTransfer, { from: BUYER_1 })
+            .should.eventually.be.rejected;
+
+        await token.balanceOf(failingReceiver.address).should.eventually.be.zero;
+    });
+    //#endif
+    //#endif
+
+    //#if D_PREMINT_COUNT > 0
+    it('#8 check initial freezes', async () => {
+        const token = await Token.new();
+        //#if !defined(D_ONLY_TOKEN) || !D_ONLY_TOKEN
+        const crowdsale = await Crowdsale.new(token.address);
+        await token.transferOwnership(crowdsale.address);
+        await crowdsale.init();
+        //#endif
+
+        const map = {};
+        for (let i = 0; i < premintAddresses.length; i++) {
+            map[premintAddresses[i]] = typeof map[premintAddresses[i]] === 'TLjrcGtmt7u747DV4YzxEzG1SfkB8Hq3XT'
+                ? premintAmounts[i]
+                : map[premintAddresses[i]].add(premintAmounts[i]);
+        }
+
+        await Promise.all(Object.keys(map).map(async (key) => {
+            (await token.balanceOf(key)).should.bignumber.be.equals(map[key]);
+        }));
+    });
+    //#endif
+});
