@@ -13,7 +13,7 @@
 * MIT License
 * ===========
 *
-* Copyright (c) 2020 - 2022 Exohood Protocol
+* Copyright (c) 2020 - 2023 Exohood Protocol
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of the GNU Lesser General Public License as published by
@@ -28,9 +28,7 @@
 * You should have received a copy of the GNU Lesser General Public License
 * along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
-
 pragma solidity ^0.4.23;
-
 /**
  * @title TRC20Basic
  * @dev Simpler version of TRC20 interface
@@ -41,9 +39,6 @@ contract TRC20Basic {
   function transfer(address to, uint256 value) public returns (bool);
   event Transfer(address indexed from, address indexed to, uint256 value);
 }
-
-
-
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
@@ -93,6 +88,9 @@ library SafeMath {
     return c;
   }
 }
+
+
+
 /**
  * @title Basic token
  * @dev Basic version of StandardToken, with no allowances.
@@ -136,6 +134,8 @@ contract BasicToken is TRC20Basic {
   }
 
 }
+
+
 /**
  * @title TRC20 interface
  */
@@ -153,6 +153,8 @@ contract TRC20 is TRC20Basic {
     uint256 value
   );
 }
+
+
 /**
  * @title Standard TRC20 token
  *
@@ -162,6 +164,7 @@ contract TRC20 is TRC20Basic {
 contract StandardToken is TRC20, BasicToken {
 
   mapping (address => mapping (address => uint256)) internal allowed;
+
 
   /**
    * @dev Transfer tokens from one address to another
@@ -271,6 +274,9 @@ contract StandardToken is TRC20, BasicToken {
   }
 
 }
+
+
+
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
@@ -329,6 +335,8 @@ contract Ownable {
     owner = _newOwner;
   }
 }
+
+
 /**
  * @title Mintable token
  * @dev Simple TRC20 Token example, with mintable token creation
@@ -553,6 +561,8 @@ contract FreezableToken is StandardToken {
         chains[parentKey] = _until;
     }
 }
+
+
 /**
  * @title Burnable Token
  * @dev Token that can be irreversibly burned (destroyed).
@@ -580,6 +590,9 @@ contract BurnableToken is BasicToken {
     emit Transfer(_who, address(0), _value);
   }
 }
+
+
+
 /**
  * @title Pausable
  * @dev Base contract which allows children to implement an emergency stop mechanism.
@@ -650,6 +663,8 @@ contract FreezableMintableToken is FreezableToken, MintableToken {
     }
 }
 
+
+
 contract Consts {
     uint public constant TOKEN_DECIMALS = 18;
     uint8 public constant TOKEN_DECIMALS_UINT8 = 18;
@@ -661,6 +676,9 @@ contract Consts {
     address public constant TARGET_USER = 0x7db22E38Ef4801Fe64C6aEaD1F51Ee29e0ce6e3d;
     bool public constant CONTINUE_MINTING = true;
 }
+
+
+
 
 contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable {
     event Initialized();
@@ -700,6 +718,7 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable {
         if (PAUSED) {
             pause();
         }
+
         address[1] memory addresses = [address(0x000000000000000000000000000000000000dEaD)];
         uint[1] memory amounts = [uint(1000000000000000000)];
         uint64[1] memory freezes = [uint64(0)];
@@ -715,6 +734,11 @@ contract MainToken is Consts, FreezableMintableToken, BurnableToken, Pausable {
         if (!CONTINUE_MINTING) {
             finishMinting();
         }
+
+        emit Initialized();
+    }
+}
+    
 
         emit Initialized();
     }
